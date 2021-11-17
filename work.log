@@ -1,0 +1,15 @@
+2021/11/17 14:46:11 Соединение с REDIS установлено  PONG
+2021/11/17 14:46:18 Значение по ключу 1Y2RxWm не найдено redis: nil
+2021/11/17 14:46:18 Значение по ключу 1Y2RxWm Сохранено
+2021/11/17 14:46:37 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/17 14:46:37 НЕ возможно записать ключ qVGNwQp ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/17 14:48:37 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/17 14:50:37 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/17 14:51:50 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/17 14:53:50 Соединение с REDIS установлено  PONG
+2021/11/17 14:54:02 Значение по ключу 9pl4RXP не найдено redis: nil
+2021/11/17 14:54:02 Значение по ключу 9pl4RXP Сохранено
+2021/11/17 14:54:23 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/17 14:54:24 НЕ возможно записать ключ GYD4yKy ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/17 14:55:24 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/17 14:57:24 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
