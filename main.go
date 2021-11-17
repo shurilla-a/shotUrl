@@ -41,6 +41,7 @@ func RedisConnect() *redis.Client {
 		log.Println("Не удалось подключиться к REDIS ", err)
 		time.Sleep(2 * time.Minute)
 		RedisConnect()
+
 	} else {
 		log.Println("Соединение с REDIS установлено ", pong)
 	}
@@ -93,11 +94,7 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	_, err := rdbc.Set(key, url, 0).Result()
 	if err != nil {
 		log.Println("НЕ возможно записать ключ "+key+" ошибка ", err)
-		for i := 0; i < 2; i++ {
-			time.Sleep(1 * time.Minute)
-			RedisConnect()
-		}
-		fmt.Println(returnCode500)
+		RedisConnect()
 	}
 	log.Println("Значение по ключу " + key + " Сохранено")
 	fmt.Fprintln(w, "http://127.0.0.1:3128/"+key)
@@ -105,9 +102,10 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 }
 
 //Функция Error 500
-func returnCode500(w http.ResponseWriter, req http.Request) {
+func ReturnCode500(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusInternalServerError)
-	w.Write([]byte("☄ HTTP status code returned!"))
+	//w.Write([]byte("HTTP status code returned!"))
+	fmt.Fprintln(w)
 }
 
 func main() {
@@ -124,5 +122,6 @@ func main() {
 	router.HandleFunc("/create", func(w http.ResponseWriter, req *http.Request) {
 		Create(w, req, rdbc)
 	}).Methods("POST")
+	router.HandleFunc("/error", ReturnCode500)
 	http.ListenAndServe(":3128", router)
 }
