@@ -51,15 +51,11 @@ func CheckRedisConnect(rdbc *redis.Client) bool {
 	pong, err := rdbc.Ping().Result()
 	if err != nil {
 		log.Println("Не удалось подключиться к REDIS ", err)
-		for i := 2; i < 2; i++ {
-			time.Sleep(2 * time.Minute)
-			RedisConnect()
-		}
-		log.Panicln("Редис не достпен прогрмма Завершена", err)
+		return false
 	} else {
 		log.Println("Соединение с REDIS установлено ", pong)
+		return true
 	}
-	return true
 }
 
 // Функция Генерации Ключей для связки ключ:значние
