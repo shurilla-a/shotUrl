@@ -47,6 +47,20 @@ func RedisConnect() *redis.Client {
 	}
 	return rdbc
 }
+func CheckRedisConnect(rdbc *redis.Client) bool {
+	pong, err := rdbc.Ping().Result()
+	if err != nil {
+		log.Println("Не удалось подключиться к REDIS ", err)
+		for i := 2; i < 2; i++ {
+			time.Sleep(2 * time.Minute)
+			RedisConnect()
+		}
+		log.Panicln("Редис не достпен прогрмма Завершена", err)
+	} else {
+		log.Println("Соединение с REDIS установлено ", pong)
+	}
+	return true
+}
 
 // Функция Генерации Ключей для связки ключ:значние
 func GenerateKey(rdbc *redis.Client) string {
@@ -94,6 +108,7 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	_, err := rdbc.Set(key, url, 0).Result()
 	if err != nil {
 		log.Println("НЕ возможно записать ключ "+key+" ошибка ", err)
+		//http.Redirect(w,req,"http://127.0.0.1:3128/error",307)
 		RedisConnect()
 	}
 	log.Println("Значение по ключу " + key + " Сохранено")
@@ -104,10 +119,8 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 //Функция Error 500
 func ReturnCode500(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusInternalServerError)
-	//w.Write([]byte("HTTP status code returned!"))
-	fmt.Fprintln(w)
+	w.Write([]byte("HTTP status code returned!"))
 }
-
 func main() {
 	logFile, err := os.OpenFile("work.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {

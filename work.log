@@ -66,3 +66,197 @@
 2021/11/17 18:12:31 Соединение с REDIS установлено  PONG
 2021/11/17 18:12:34 redis: nil
 2021/11/17 18:12:48 redis: nil
+2021/11/18 13:05:24 Соединение с REDIS установлено  PONG
+2021/11/18 13:05:25 redis: nil
+2021/11/18 13:10:36 Соединение с REDIS установлено  PONG
+2021/11/18 13:10:47 Значение по ключу lvzrzG6 не найдено redis: nil
+2021/11/18 13:10:47 Значение по ключу lvzrzG6 Сохранено
+2021/11/18 13:11:21 Соединение с REDIS установлено  PONG
+2021/11/18 13:11:35 redis: nil
+2021/11/18 13:11:56 Соединение с REDIS установлено  PONG
+2021/11/18 13:12:00 redis: nil
+2021/11/18 13:12:04 redis: nil
+2021/11/18 13:12:04 redis: nil
+2021/11/18 13:12:05 redis: nil
+2021/11/18 13:12:05 redis: nil
+2021/11/18 13:13:54 Соединение с REDIS установлено  PONG
+2021/11/18 13:14:02 redis: nil
+2021/11/18 13:15:07 Соединение с REDIS установлено  PONG
+2021/11/18 13:15:23 Значение по ключу MEM3MMP не найдено redis: nil
+2021/11/18 13:15:23 Значение по ключу MEM3MMP Сохранено
+2021/11/18 13:15:57 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:15:57 НЕ возможно записать ключ y60L0Rz ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:15:57 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:17:42 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:19:42 Соединение с REDIS установлено  PONG
+2021/11/18 13:23:53 Соединение с REDIS установлено  PONG
+2021/11/18 13:24:01 Значение по ключу 8okQm9g не найдено redis: nil
+2021/11/18 13:24:01 Значение по ключу 8okQm9g Сохранено
+2021/11/18 13:24:11 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:24:11 НЕ возможно записать ключ pREyGzp ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:24:12 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:25:42 Соединение с REDIS установлено  PONG
+2021/11/18 13:26:44 Соединение с REDIS установлено  PONG
+2021/11/18 13:49:25 Соединение с REDIS установлено  PONG
+2021/11/18 13:49:34 Значение по ключу WwZ32kW не найдено redis: nil
+2021/11/18 13:49:34 Значение по ключу WwZ32kW Сохранено
+2021/11/18 13:49:47 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:49:48 НЕ возможно записать ключ 021G4v7 ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:49:48 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:51:58 Соединение с REDIS установлено  PONG
+2021/11/18 13:52:02 Значение по ключу LYL3Xgp не найдено redis: nil
+2021/11/18 13:52:02 Значение по ключу LYL3Xgp Сохранено
+2021/11/18 13:52:10 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:52:11 НЕ возможно записать ключ WwZ3gn4 ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:52:11 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:54:11 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:54:11 http: panic serving 127.0.0.1:37654: http: multiple registrations for /
+goroutine 21 [running]:
+net/http.(*conn).serve.func1()
+	/usr/local/go/src/net/http/server.go:1801 +0xb9
+panic({0x63df80, 0xc00019c640})
+	/usr/local/go/src/runtime/panic.go:1047 +0x266
+net/http.(*ServeMux).Handle(0x899c40, {0x69168f, 0x1}, {0x6e9a60, 0x6a9c60})
+	/usr/local/go/src/net/http/server.go:2440 +0x226
+net/http.(*ServeMux).HandleFunc(...)
+	/usr/local/go/src/net/http/server.go:2477
+net/http.HandleFunc(...)
+	/usr/local/go/src/net/http/server.go:2489
+main.RedisConnect()
+	/home/shurilla/GolandProjects/shotUrl/main.go:42 +0x16c
+main.RedisConnect()
+	/home/shurilla/GolandProjects/shotUrl/main.go:44 +0x185
+main.Create({0x6ee180, 0xc0001be2a0}, 0xc0001e2500, 0xc0000b0360)
+	/home/shurilla/GolandProjects/shotUrl/main.go:98 +0x1aa
+main.main.func2({0x6ee180, 0xc0001be2a0}, 0xc000192a50)
+	/home/shurilla/GolandProjects/shotUrl/main.go:128 +0x27
+net/http.HandlerFunc.ServeHTTP(0xc0001e2400, {0x6ee180, 0xc0001be2a0}, 0xc00018d9f8)
+	/usr/local/go/src/net/http/server.go:2046 +0x2f
+github.com/gorilla/mux.(*Router).ServeHTTP(0xc0001ae000, {0x6ee180, 0xc0001be2a0}, 0xc0001e2300)
+	/home/shurilla/GolandProjects/pkg/mod/github.com/gorilla/mux@v1.8.0/mux.go:210 +0x1cf
+net/http.serverHandler.ServeHTTP({0x6ed668}, {0x6ee180, 0xc0001be2a0}, 0xc0001e2300)
+	/usr/local/go/src/net/http/server.go:2878 +0x43b
+net/http.(*conn).serve(0xc0000b4c80, {0x6ef220, 0xc000192540})
+	/usr/local/go/src/net/http/server.go:1929 +0xb08
+created by net/http.(*Server).Serve
+	/usr/local/go/src/net/http/server.go:3033 +0x4e8
+2021/11/18 13:55:32 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:57:24 Соединение с REDIS установлено  PONG
+2021/11/18 13:57:26 Значение по ключу kwyqJwJ не найдено redis: nil
+2021/11/18 13:57:26 Значение по ключу kwyqJwJ Сохранено
+2021/11/18 13:57:34 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:57:34 НЕ возможно записать ключ rEJAQg2 ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:57:34 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:59:34 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 13:59:34 http: panic serving 127.0.0.1:37752: http: multiple registrations for /error
+goroutine 34 [running]:
+net/http.(*conn).serve.func1()
+	/usr/local/go/src/net/http/server.go:1801 +0xb9
+panic({0x63df80, 0xc000113160})
+	/usr/local/go/src/runtime/panic.go:1047 +0x266
+net/http.(*ServeMux).Handle(0x899c40, {0x691e18, 0x6}, {0x6e9a60, 0x6a9c58})
+	/usr/local/go/src/net/http/server.go:2440 +0x226
+net/http.(*ServeMux).HandleFunc(...)
+	/usr/local/go/src/net/http/server.go:2477
+net/http.HandleFunc(...)
+	/usr/local/go/src/net/http/server.go:2489
+main.RedisConnect()
+	/home/shurilla/GolandProjects/shotUrl/main.go:42 +0x16c
+main.RedisConnect()
+	/home/shurilla/GolandProjects/shotUrl/main.go:44 +0x185
+main.Create({0x6ee180, 0xc0000be000}, 0xc0000ac200, 0xc00012a360)
+	/home/shurilla/GolandProjects/shotUrl/main.go:98 +0x1aa
+main.main.func2({0x6ee180, 0xc0000be000}, 0xc000092210)
+	/home/shurilla/GolandProjects/shotUrl/main.go:128 +0x27
+net/http.HandlerFunc.ServeHTTP(0xc0000ac100, {0x6ee180, 0xc0000be000}, 0xc0002089f8)
+	/usr/local/go/src/net/http/server.go:2046 +0x2f
+github.com/gorilla/mux.(*Router).ServeHTTP(0xc0001840c0, {0x6ee180, 0xc0000be000}, 0xc0000ac000)
+	/home/shurilla/GolandProjects/pkg/mod/github.com/gorilla/mux@v1.8.0/mux.go:210 +0x1cf
+net/http.serverHandler.ServeHTTP({0x6ed668}, {0x6ee180, 0xc0000be000}, 0xc0000ac000)
+	/usr/local/go/src/net/http/server.go:2878 +0x43b
+net/http.(*conn).serve(0xc000096000, {0x6ef220, 0xc000115590})
+	/usr/local/go/src/net/http/server.go:1929 +0xb08
+created by net/http.(*Server).Serve
+	/usr/local/go/src/net/http/server.go:3033 +0x4e8
+2021/11/18 14:00:28 dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:01:47 Соединение с REDIS установлено  PONG
+2021/11/18 14:01:52 Значение по ключу xVPKZzq не найдено redis: nil
+2021/11/18 14:01:52 Значение по ключу xVPKZzq Сохранено
+2021/11/18 14:02:01 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:02:01 НЕ возможно записать ключ KY03W7Y ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:02:02 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:04:02 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:06:02 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:08:03 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:10:03 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:12:03 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:14:03 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:16:04 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:18:04 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:20:04 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:22:05 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:24:05 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:26:05 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:28:05 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:30:06 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:32:06 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:34:06 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:36:07 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:38:07 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:40:07 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:42:07 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:44:08 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:47:10 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:47:46 Соединение с REDIS установлено  PONG
+2021/11/18 14:47:50 Значение по ключу PMP3X4y не найдено redis: nil
+2021/11/18 14:47:50 Значение по ключу PMP3X4y Сохранено
+2021/11/18 14:47:58 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:47:58 НЕ возможно записать ключ 1Y2JxR0 ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:47:59 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:49:59 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:51:59 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:54:00 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:56:00 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 14:58:00 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:00:00 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:02:01 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:04:01 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:06:02 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:08:02 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:10:02 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:12:02 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:14:02 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:16:20 Соединение с REDIS установлено  PONG
+2021/11/18 15:16:30 Значение по ключу kwypQ4E не найдено redis: nil
+2021/11/18 15:16:30 Значение по ключу kwypQ4E Сохранено
+2021/11/18 15:16:44 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:16:44 НЕ возможно записать ключ lvzqQw5 ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:16:44 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:18:35 Соединение с REDIS установлено  PONG
+2021/11/18 15:18:37 Значение по ключу DYzmNgn не найдено redis: nil
+2021/11/18 15:18:37 Значение по ключу DYzmNgn Сохранено
+2021/11/18 15:18:47 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:18:47 НЕ возможно записать ключ QNQDJyY ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:18:48 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:20:48 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:22:48 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:24:49 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:26:49 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:28:49 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:30:49 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:45:06 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:45:29 Соединение с REDIS установлено  PONG
+2021/11/18 15:45:33 Значение по ключу Zw3P6Eg не найдено redis: nil
+2021/11/18 15:45:33 Значение по ключу Zw3P6Eg Сохранено
+2021/11/18 15:45:44 Не удалось проверить ключ или REDIS не доступен dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:45:44 НЕ возможно записать ключ 021JRjN ошибка  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:45:44 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:47:45 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:49:45 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:51:45 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:53:46 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:55:46 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:57:46 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 15:59:46 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 16:01:47 Не удалось подключиться к REDIS  dial tcp 127.0.0.1:6379: connect: connection refused
+2021/11/18 16:02:36 Соединение с REDIS установлено  PONG
