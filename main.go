@@ -64,6 +64,10 @@ func CheckRedisConnect(rdbc *redis.Client) bool {
 
 // Функция Генерации Ключей для связки ключ:значние
 func GenerateKey(rdbc *redis.Client) string {
+	chech := CheckRedisConnect(rdbc)
+	if chech != true {
+		RedisConnect()
+	}
 	hd := hashids.NewData()
 	hd.MinLength = 7
 	hash, err := hashids.NewWithData(hd)
