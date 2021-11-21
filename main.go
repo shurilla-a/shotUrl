@@ -60,12 +60,13 @@ func CheckRedisConnect(rdbc *redis.Client) bool {
 
 // Функция Генерации Ключей для связки ключ:значние
 func GenerateKey(rdbc *redis.Client) string {
-	chech := CheckRedisConnect(rdbc)
-	if chech != true {
+	check := CheckRedisConnect(rdbc)
+	if check != true {
 		RedisConnect()
 	}
 	hd := hashids.NewData()
 	hd.MinLength = 7
+	//подумать что делать
 	hash, err := hashids.NewWithData(hd)
 	if err != nil {
 		log.Println(err)
@@ -79,8 +80,6 @@ func GenerateKey(rdbc *redis.Client) string {
 	if err == redis.Nil {
 		log.Println("Значение по ключу "+key+" не найдено", err)
 	} else if err != nil {
-		log.Println("Не удалось проверить ключ или REDIS не доступен", err)
-	} else {
 		log.Println("Ключ " + key + " со значением " + value + " существует ")
 		GenerateKey(rdbc)
 	}
@@ -102,12 +101,18 @@ func Redirect(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 
 //Функция создания короткой ссылки
 func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
+	check := CheckRedisConnect(rdbc)
+	if check != true {
+		RedisConnect()
+	}
 	req.ParseForm()
 	url := req.Form["url"][0]
 	key := GenerateKey(rdbc)
 	_, err := rdbc.Set(key, url, 0).Result()
 	if err != nil {
 		log.Println("НЕ возможно записать ключ "+key+" ошибка ", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, "НЕ возможно записать ключ "+key)
 		//http.Redirect(w,req,"http://127.0.0.1:3128/error",307)
 		RedisConnect()
 	}
