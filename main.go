@@ -75,6 +75,7 @@ func GenerateKey(rdbc *redis.Client) string {
 	key, err := hash.Encode([]int{int(timeNow.Unix())})
 	if err != nil {
 		log.Println(err)
+
 	}
 	value, err := rdbc.Get(key).Result()
 	if err == redis.Nil {
@@ -96,8 +97,7 @@ func Redirect(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 		log.Println("Функция Redirect НЕ утдалось перенаправить по ключу "+key+" Ошибка", err)
 		check := CheckRedisConnect(rdbc)
 		if check != true {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 - Something bad happened!"))
+			ReturnCode500(w)
 			return
 		}
 	} else {
@@ -111,8 +111,7 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	check := CheckRedisConnect(rdbc)
 	if check != true {
 		log.Println("Функция Create,Redis не доступен", check)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 - Something bad happened!"))
+		ReturnCode500(w)
 		return
 	} else {
 		req.ParseForm()
@@ -121,8 +120,7 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 		_, err := rdbc.Set(key, url, 0).Result()
 		if err != nil {
 			log.Println("НЕ возможно записать ключ "+key+" ошибка ", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 - Something bad happened!"))
+			ReturnCode500(w)
 			return
 		}
 		log.Println("Значение по ключу " + key + " Сохранено")
@@ -131,10 +129,10 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 }
 
 //Функция Error 500
-//func ReturnCode500(w http.ResponseWriter, req *http.Request) {
-//	w.WriteHeader(http.StatusInternalServerError)
-//	w.Write([]byte("500 - Something bad happened!"))
-//}
+func ReturnCode500(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write([]byte("500 - Something bad happened!"))
+}
 func main() {
 	logFile, err := os.OpenFile("work.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
