@@ -41,7 +41,6 @@ func RedisConnect() *redis.Client {
 		log.Println("Не удалось подключиться к REDIS ", err)
 		time.Sleep(2 * time.Minute)
 		RedisConnect()
-
 	} else {
 		log.Println("Соединение с REDIS установлено ", pong)
 	}
@@ -70,6 +69,7 @@ func GenerateKey(rdbc *redis.Client) string {
 	hash, err := hashids.NewWithData(hd)
 	if err != nil {
 		log.Println(err)
+
 	}
 	timeNow := time.Now()
 	key, err := hash.Encode([]int{int(timeNow.Unix())})
@@ -93,35 +93,41 @@ func Redirect(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	key := params["key"]
 	url, err := rdbc.Get(key).Result()
 	if err != nil {
-		log.Println(err)
+		log.Println("Функция Redirect НЕ утдалось перенаправить по ключу "+key+" Ошибка", err)
+		check := CheckRedisConnect(rdbc)
+		if check != true {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+			return
+		}
+	} else {
+		http.Redirect(w, req, url, 301)
 	}
-	http.Redirect(w, req, url, 301)
-	//defer rdbc.Close()
+
 }
 
 //Функция создания короткой ссылки
 func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	check := CheckRedisConnect(rdbc)
 	if check != true {
+		log.Println("Функция Create,Redis не доступен", check)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500 - Something bad happened!"))
-		//fmt.Fprintln(w, "Что то пошло не так")
 		return
-		//log.Panicln("Жепа")
-		//RedisConnect()
+	} else {
+		req.ParseForm()
+		url := req.Form["url"][0]
+		key := GenerateKey(rdbc)
+		_, err := rdbc.Set(key, url, 0).Result()
+		if err != nil {
+			log.Println("НЕ возможно записать ключ "+key+" ошибка ", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+			return
+		}
+		log.Println("Значение по ключу " + key + " Сохранено")
+		fmt.Fprintln(w, "http://127.0.0.1:3128/"+key)
 	}
-	req.ParseForm()
-	url := req.Form["url"][0]
-	key := GenerateKey(rdbc)
-	_, err := rdbc.Set(key, url, 0).Result()
-	if err != nil {
-		log.Println("НЕ возможно записать ключ "+key+" ошибка ", err)
-		//http.Redirect(w,req,"http://127.0.0.1:3128/error",307)
-		RedisConnect()
-	}
-	log.Println("Значение по ключу " + key + " Сохранено")
-	fmt.Fprintln(w, "http://127.0.0.1:3128/"+key)
-	//defer rdbc.Close()
 }
 
 //Функция Error 500
