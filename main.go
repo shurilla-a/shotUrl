@@ -103,7 +103,12 @@ func Redirect(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	check := CheckRedisConnect(rdbc)
 	if check != true {
-		RedisConnect()
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
+		//fmt.Fprintln(w, "Что то пошло не так")
+		return
+		//log.Panicln("Жепа")
+		//RedisConnect()
 	}
 	req.ParseForm()
 	url := req.Form["url"][0]
@@ -111,8 +116,6 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	_, err := rdbc.Set(key, url, 0).Result()
 	if err != nil {
 		log.Println("НЕ возможно записать ключ "+key+" ошибка ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintln(w, "НЕ возможно записать ключ "+key)
 		//http.Redirect(w,req,"http://127.0.0.1:3128/error",307)
 		RedisConnect()
 	}
@@ -122,10 +125,10 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 }
 
 //Функция Error 500
-func ReturnCode500(w http.ResponseWriter, req *http.Request) {
-	w.WriteHeader(http.StatusInternalServerError)
-	w.Write([]byte("HTTP status code returned!"))
-}
+//func ReturnCode500(w http.ResponseWriter, req *http.Request) {
+//	w.WriteHeader(http.StatusInternalServerError)
+//	w.Write([]byte("500 - Something bad happened!"))
+//}
 func main() {
 	logFile, err := os.OpenFile("work.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
@@ -140,6 +143,6 @@ func main() {
 	router.HandleFunc("/create", func(w http.ResponseWriter, req *http.Request) {
 		Create(w, req, rdbc)
 	}).Methods("POST")
-	router.HandleFunc("/error", ReturnCode500)
+	//router.HandleFunc("/error", ReturnCode500)
 	http.ListenAndServe(":3128", router)
 }
