@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -36,55 +37,56 @@ func RedisConnect() *redis.Client {
 		Password:   "",
 		MaxRetries: 5,
 	})
-	pong, err := rdbc.Ping().Result()
-	if err != nil {
-		log.Println("Не удалось подключиться к REDIS ", err)
-		time.Sleep(2 * time.Minute)
-		RedisConnect()
+	check := CheckRedisConnect(rdbc)
+	if check != true {
+		log.Println("Функция RedisConnect Не удалось подключиться к REDIS ", check)
+		//time.Sleep(2 * time.Minute)
+		//RedisConnect()
 	} else {
-		log.Println("Соединение с REDIS установлено ", pong)
+		log.Println("Функция RedisConnect Соединение с REDIS установлено ", check)
 	}
 	return rdbc
 }
 func CheckRedisConnect(rdbc *redis.Client) bool {
 	pong, err := rdbc.Ping().Result()
 	if err != nil {
-		log.Println("Не удалось подключиться к REDIS ", err)
+		log.Println("Функция CheckRedisConnect не удалось подключиться к REDIS ", err)
 		return false
 	} else {
-		log.Println("Соединение с REDIS установлено ", pong)
+		log.Println("Функция CheckRedisConnect соединение с REDIS установлено ", pong)
 		return true
 	}
 }
 
 // Функция Генерации Ключей для связки ключ:значние
-func GenerateKey(rdbc *redis.Client) string {
+func GenerateKey(rdbc *redis.Client) (string, bool) {
 	check := CheckRedisConnect(rdbc)
 	if check != true {
-		RedisConnect()
+		log.Println("Функция GenerateKey , Redis не доступен", check)
+		return "", false
 	}
 	hd := hashids.NewData()
 	hd.MinLength = 7
 	//подумать что делать
 	hash, err := hashids.NewWithData(hd)
 	if err != nil {
-		log.Println(err)
-
+		log.Println("Функция GenerateKey не возможно создать New new HashID ", err)
+		return "", false
 	}
 	timeNow := time.Now()
 	key, err := hash.Encode([]int{int(timeNow.Unix())})
 	if err != nil {
-		log.Println(err)
-
+		log.Println("Функция GenerateKey не возможно Encode hashes ", err)
+		return "", false
 	}
 	value, err := rdbc.Get(key).Result()
 	if err == redis.Nil {
-		log.Println("Значение по ключу "+key+" не найдено", err)
-	} else if err != nil {
-		log.Println("Ключ " + key + " со значением " + value + " существует ")
+		log.Println("Функция GenerateKey Значение по ключу "+key+" не найдено", err)
+	} else {
+		log.Println("Функция GenerateKey Ключ " + key + " со значением " + value + " существует ")
 		GenerateKey(rdbc)
 	}
-	return key
+	return key, true
 
 }
 
@@ -113,19 +115,28 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 		log.Println("Функция Create,Redis не доступен", check)
 		ReturnCode500(w)
 		return
-	} else {
-		req.ParseForm()
-		url := req.Form["url"][0]
-		key := GenerateKey(rdbc)
-		_, err := rdbc.Set(key, url, 0).Result()
-		if err != nil {
-			log.Println("НЕ возможно записать ключ "+key+" ошибка ", err)
-			ReturnCode500(w)
-			return
-		}
-		log.Println("Значение по ключу " + key + " Сохранено")
-		fmt.Fprintln(w, "http://127.0.0.1:3128/"+key)
 	}
+	req.ParseForm()
+	url := req.Form["url"][0]
+	key, genkeyBool := GenerateKey(rdbc)
+	if genkeyBool != true {
+		log.Println("Ошибка при работе функции GenerateKey ", genkeyBool)
+		ReturnCode500(w)
+		return
+	}
+	value, err := rdbc.Get(key).Result()
+	if err == redis.Nil {
+		_, err := rdbc.Set(key, url, 0).Result()
+		log.Println("Значение по ключу "+key+" Сохранено", err)
+		fmt.Fprintln(w, "http://127.0.0.1:3128/"+key)
+	} else {
+		log.Println("НЕ возможно записать ключ " + key + " ошибка Значение " + value + "Существет")
+		ReturnCode500(w)
+		return
+	}
+
+	//log.Println("Значение по ключу " + key + " Сохранено")
+	//fmt.Fprintln(w, "http://127.0.0.1:3128/"+key)
 }
 
 //Функция Error 500
@@ -134,6 +145,7 @@ func ReturnCode500(w http.ResponseWriter) {
 	w.Write([]byte("500 - Something bad happened!"))
 }
 func main() {
+	runtime.GOMAXPROCS(2)
 	logFile, err := os.OpenFile("work.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Panicf("Не возможно создать или открыть лог ошибок", err)
