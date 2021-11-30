@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"github.com/speps/go-hashids"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	_ "gopkg.in/yaml.v2"
 	"log"
 	"net/http"
@@ -28,6 +32,43 @@ import (
 //func ConfigFile(configFile string) (*ConfigYaml, error) {
 //
 //}
+// константы для подключения к монгоДБ
+const (
+	DBName        = " testTest"
+	URI           = "mongodb://127.0.0.1:27017"
+	UrlCollection = "shotUrl"
+)
+
+// описание структуры для вставки в монгоДБ
+type ShotUrl struct {
+	ID    primitive.ObjectID `bson:"id" json:"id,omitempty"`
+	Key   string             `json:"key"`
+	Value string             `json:"value"`
+}
+
+//Функция подключения к монгоДБ
+func mongoDbC() (*mongo.Client, *mongo.Database) {
+	ctx := context.Background()
+	mDBcop := options.Client().ApplyURI(URI)
+	mDBcon, err := mongo.Connect(ctx, mDBcop)
+	if err != nil {
+		log.Println("Функция mongoDbC не возможно подключиться к mongoDB", err)
+	}
+	mDBnameDB := mDBcon.Database(DBName)
+	return mDBcon, mDBnameDB
+}
+
+// проверка доступности MongoDB
+func CheckMongoDB(mDBcon *mongo.Client) bool {
+	err := mDBcon.Ping(context.TODO(), nil)
+	if err != nil {
+		log.Println("Функция CheckMongoDB , mongoDB не доступна", err)
+		return false
+	} else {
+		log.Println("Функция CheckMongoDB , mongoDB доступна")
+		return true
+	}
+}
 
 // Функция подключения к БД REDIS
 func RedisConnect() *redis.Client {
@@ -67,7 +108,6 @@ func GenerateKey(rdbc *redis.Client) (string, bool) {
 	}
 	hd := hashids.NewData()
 	hd.MinLength = 7
-	//подумать что делать
 	hash, err := hashids.NewWithData(hd)
 	if err != nil {
 		log.Println("Функция GenerateKey не возможно создать New new HashID ", err)
@@ -159,4 +199,8 @@ func main() {
 		Create(w, req, rdbc)
 	}).Methods("POST")
 	http.ListenAndServe(":3128", router)
+	//if err != nil {
+	//	log.Fatal(http.ListenAndServe(":3128",nil))
+	//}
+	//
 }
