@@ -1,14 +1,10 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"github.com/speps/go-hashids"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	_ "gopkg.in/yaml.v2"
 	"log"
 	"net/http"
@@ -33,42 +29,42 @@ import (
 //
 //}
 // константы для подключения к монгоДБ
-const (
-	DBName        = " testTest"
-	URI           = "mongodb://127.0.0.1:27017"
-	UrlCollection = "shotUrl"
-)
+//const (
+//	DBName        = " testTest"
+//	URI           = "mongodb://127.0.0.1:27017"
+//	UrlCollection = "shotUrl"
+//)
 
 // описание структуры для вставки в монгоДБ
-type ShotUrl struct {
-	ID    primitive.ObjectID `bson:"id" json:"id,omitempty"`
-	Key   string             `json:"key"`
-	Value string             `json:"value"`
-}
+//type ShotUrl struct {
+//	ID    primitive.ObjectID `bson:"id" json:"id,omitempty"`
+//	Key   string             `json:"key"`
+//	Value string             `json:"value"`
+//}
 
 //Функция подключения к монгоДБ
-func mongoDbC() (*mongo.Client, *mongo.Database) {
-	ctx := context.Background()
-	mDBcop := options.Client().ApplyURI(URI)
-	mDBcon, err := mongo.Connect(ctx, mDBcop)
-	if err != nil {
-		log.Println("Функция mongoDbC не возможно подключиться к mongoDB", err)
-	}
-	mDBnameDB := mDBcon.Database(DBName)
-	return mDBcon, mDBnameDB
-}
+//func mongoDbC() (*mongo.Client, *mongo.Database) {
+//	ctx := context.Background()
+//	mDBcop := options.Client().ApplyURI(URI)
+//	mDBcon, err := mongo.Connect(ctx, mDBcop)
+//	if err != nil {
+//		log.Println("Функция mongoDbC не возможно подключиться к mongoDB", err)
+//	}
+//	mDBnameDB := mDBcon.Database(DBName)
+//	return mDBcon, mDBnameDB
+//}
 
 // проверка доступности MongoDB
-func CheckMongoDB(mDBcon *mongo.Client) bool {
-	err := mDBcon.Ping(context.TODO(), nil)
-	if err != nil {
-		log.Println("Функция CheckMongoDB , mongoDB не доступна", err)
-		return false
-	} else {
-		log.Println("Функция CheckMongoDB , mongoDB доступна")
-		return true
-	}
-}
+//func CheckMongoDB(mDBcon *mongo.Client) bool {
+//	err := mDBcon.Ping(context.TODO(), nil)
+//	if err != nil {
+//		log.Println("Функция CheckMongoDB , mongoDB не доступна", err)
+//		return false
+//	} else {
+//		log.Println("Функция CheckMongoDB , mongoDB доступна")
+//		return true
+//	}
+//}
 
 // Функция подключения к БД REDIS
 func RedisConnect() *redis.Client {
@@ -100,12 +96,20 @@ func CheckRedisConnect(rdbc *redis.Client) bool {
 }
 
 // Функция Генерации Ключей для связки ключ:значние
+//func GenerateKey(rdbc *redis.Client, mDBcon *mongo.Client, mDBnameDB *mongo.Database) (string, bool)
 func GenerateKey(rdbc *redis.Client) (string, bool) {
 	check := CheckRedisConnect(rdbc)
 	if check != true {
 		log.Println("Функция GenerateKey , Redis не доступен", check)
 		return "", false
 	}
+
+	//checkMongo := CheckMongoDB(mDBcon)
+	//if checkMongo != true {
+	//	log.Println("Функция GenerateKey , MongoDB  не доступена", checkMongo)
+	//	return "", false
+	//}
+
 	hd := hashids.NewData()
 	hd.MinLength = 7
 	hash, err := hashids.NewWithData(hd)
@@ -124,11 +128,11 @@ func GenerateKey(rdbc *redis.Client) (string, bool) {
 		log.Println("Функция GenerateKey Значение по ключу "+key+" не найдено", err)
 	} else {
 		log.Println("Функция GenerateKey Ключ " + key + " со значением " + value + " существует ")
+		//GenerateKey(rdbc,mDBcon,mDBnameDB)
 		GenerateKey(rdbc)
 	}
 
 	return key, true
-
 }
 
 // Функция Редирект с короткой ссылки на обычную
@@ -169,7 +173,7 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	if err == redis.Nil {
 		_, err := rdbc.Set(key, url, 0).Result()
 		log.Println("Значение по ключу "+key+" Сохранено", err)
-		fmt.Fprintln(w, "http://127.0.0.1:3128/"+key)
+		fmt.Fprintln(w, "http://o.cmrka.df/"+key)
 	} else {
 		log.Println("НЕ возможно записать ключ " + key + " ошибка Значение " + value + "Существет")
 		ReturnCode500(w)
@@ -198,7 +202,7 @@ func main() {
 	router.HandleFunc("/create", func(w http.ResponseWriter, req *http.Request) {
 		Create(w, req, rdbc)
 	}).Methods("POST")
-	http.ListenAndServe(":3128", router)
+	http.ListenAndServe(":8080", router)
 	//if err != nil {
 	//	log.Fatal(http.ListenAndServe(":3128",nil))
 	//}
