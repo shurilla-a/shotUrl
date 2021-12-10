@@ -64,7 +64,7 @@ func GenerateHash() (error, string) {
 	}
 }
 
-func GenerateKey(rdbc *redis.Client) string {
+func GenerateKey(rdbc *redis.Client) (error, string) {
 	//check := CheckRedisConnect(rdbc)
 	//if check != true {
 	//	log.Println("Функция GenerateKey , Redis не доступен", check)
@@ -72,7 +72,8 @@ func GenerateKey(rdbc *redis.Client) string {
 	//}
 	err, key := GenerateHash()
 	if err != nil {
-		panic(err)
+
+		return err, ""
 	}
 	log.Println(key, "Ключ сгенерирован")
 	value, err := rdbc.Get(key).Result()
@@ -81,9 +82,9 @@ func GenerateKey(rdbc *redis.Client) string {
 	} else {
 		log.Println("Функция GenerateKey Ключ " + key + " со значением " + value + " существует ERROR")
 		log.Println(key, "Ключ отправлен на перегенегацию ")
-		key = GenerateKey(rdbc)
+		_, key = GenerateKey(rdbc)
 	}
-	return key
+	return nil, key
 	//, true
 }
 
@@ -111,12 +112,11 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	}
 	req.ParseForm()
 	url := req.Form["url"][0]
-	key := GenerateKey(rdbc)
-	//if genkeyBool != true {
-	//	log.Println("Ошибка при работе функции GenerateKey ", genkeyBool)
-	//	ReturnCode500(w)
-	//	return
-	//}
+	err, key := GenerateKey(rdbc)
+	if err != nil {
+		ReturnCode500(w)
+		return
+	}
 	value, err := rdbc.Get(key).Result()
 	if err == redis.Nil {
 		_, err := rdbc.Set(key, url, 0).Result()
