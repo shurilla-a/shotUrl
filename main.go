@@ -159,7 +159,11 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	value, err := rdbc.Get(key).Result()
 	if err == redis.Nil {
 		_, err := rdbc.Set(key, url, 0).Result()
-		log.Println("Значение по ключу "+key+" Сохранено", err)
+		if err != nil {
+
+		}
+		LogInform("Значение по ключу " + key + " Сохранено")
+		//log.Println("Значение по ключу "+key+" Сохранено", err)
 		fmt.Fprintln(w, "http://o.cmrka.df/"+key)
 	} else {
 		LogError(err, "НЕ возможно записать ключ "+key+" ошибка Значение "+value+"Существет")
@@ -182,7 +186,6 @@ func ReturnCode404(w http.ResponseWriter) {
 
 func main() {
 	runtime.GOMAXPROCS(2)
-	//log.SetOutput(logFile)
 	rdbc := RedisConnect()
 	signalChanel := make(chan os.Signal, 1)
 	signal.Notify(signalChanel, syscall.SIGQUIT)
