@@ -46,7 +46,7 @@ func CheckRedisConnect(rdbc *redis.Client) bool {
 
 //Функция обработки логов ошибок
 func LogError(err error, msg string) {
-	logFile, err1 := os.OpenFile("error.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	logFile, err1 := os.OpenFile("work.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err1 != nil {
 		log.Panicf("Не возможно создать или открыть лог ошибок", err)
 	}
@@ -58,7 +58,7 @@ func LogError(err error, msg string) {
 
 //Функция LogInform
 func LogInform(msg string) {
-	logFile, err1 := os.OpenFile("info.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	logFile, err1 := os.OpenFile("work.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err1 != nil {
 		log.Panicf("Не возможно создать или открыть лог ошибок", err1)
 	}
