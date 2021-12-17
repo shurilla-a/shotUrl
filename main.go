@@ -25,10 +25,9 @@ func RedisConnect() *redis.Client {
 	check := CheckRedisConnect(rdbc)
 	if check != true {
 		LogError(nil, "Функция RedisConnect Не удалось подключиться к REDIS ")
-		//ErrorLogger.Println("Функция RedisConnect Не удалось подключиться к REDIS ", check)
+
 	} else {
 		LogInform("Функция RedisConnect Соединение с REDIS установлено ")
-		//InfoLogger.Println("Функция RedisConnect Соединение с REDIS установлено ", check)
 	}
 	return rdbc
 }
@@ -38,11 +37,9 @@ func CheckRedisConnect(rdbc *redis.Client) bool {
 	pong, err := rdbc.Ping().Result()
 	if err != nil {
 		LogError(err, "Функция CheckRedisConnect не удалось подключиться к REDIS ")
-		//ErrorLogger.Println("Функция CheckRedisConnect не удалось подключиться к REDIS ", err)
 		return false
 	} else {
 		LogInform("Функция CheckRedisConnect соединение с REDIS установлено " + pong)
-		//InfoLogger.Println("Функция CheckRedisConnect соединение с REDIS установлено ", pong)
 		return true
 	}
 }
@@ -65,7 +62,6 @@ func LogInform(msg string) {
 	if err1 != nil {
 		log.Panicf("Не возможно создать или открыть лог ошибок", err1)
 	}
-	//InfoLogger = log.New(logFile, "INFO", log.Ldate|log.Lmicroseconds|log.Lshortfile)
 	ErrorLog := log.New(logFile, "INFO - ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
 	ErrorLog.Println(msg)
 	log.SetOutput(logFile)
@@ -78,50 +74,36 @@ func GenerateHash() (error, string) {
 	hash, err := hashids.NewWithData(hd)
 	if err != nil {
 		LogError(err, "Функция GenerateHash не возможно создать New new HashID ")
-		//ErrorLogger.Println("Функция GenerateHash не возможно создать New new HashID ", err)
 		return err, ""
 	}
 	timeNow := time.Now()
 	//fmt.Println(timeNow.Nanosecond())
 	key, err := hash.Encode([]int{int(timeNow.Nanosecond())})
-	//key, err := hash.Encode([]int{int(timeNow.Nanosecond())})
 	if err != nil {
-		//ErrorLogger.Println("Функция GenerateHash не возможно Encode hashes ", err)
 		LogError(err, "Функция GenerateHash не возможно Encode hashes ")
 		return err, ""
 	} else {
-		//generaTime := timeNow.Nanosecond()
-		LogInform("Ключ" + key + "Сгенерирован фунуцией GenerateHash")
-		//log.Println(key, "Сгенерирован фунуцией GenerateHash", generaTime)
-		//log.Println(key, "Сгенерирован фунуцией GenerateHash", generaTime)
+		LogInform("Ключ " + key + "Сгенерирован фунуцией GenerateHash")
 		return nil, key
 	}
 }
 
 func GenerateKey(rdbc *redis.Client) (error, string) {
-	//check := CheckRedisConnect(rdbc)
-	//if check != true {
-	//	log.Println("Функция GenerateKey , Redis не доступен", check)
-	//	return "", false
-	//}
 	err, key := GenerateHash()
 	if err != nil {
-
 		return err, ""
 	}
-	log.Println(key, "Ключ сгенерирован")
+	LogInform("Ключ сгенерирован " + key)
 	value, err := rdbc.Get(key).Result()
 	if err == redis.Nil {
-		LogInform("Функция GenerateKey Значение по ключу " + key + "не найдено")
+		LogInform("Функция GenerateKey Значение по ключу " + key + " не найдено")
 		//log.Println("Функция GenerateKey Значение по ключу "+key+" не найдено", err)
 	} else {
 		LogError(err, "Функция GenerateKey Ключ "+key+" со значением "+value+" существует")
-		//ErrorLogger.Println("Функция GenerateKey Ключ " + key + " со значением " + value + " существует ERROR")
-		//InfoLogger.Println(key, "Ключ отправлен на перегенегацию ")
 		_, key = GenerateKey(rdbc)
 	}
 	return nil, key
-	//, true
+
 }
 
 // Функция Редирект с короткой ссылки на обычную
@@ -144,8 +126,7 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	check := CheckRedisConnect(rdbc)
 	if check != true {
 
-		LogError(nil, "Redis is false")
-		//ErrorLogger.Println("Функция Create,Redis не доступен", check)
+		LogError(nil, "Функция Create,Redis не доступен")
 		ReturnCode500(w)
 		return
 	}
@@ -158,16 +139,18 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	}
 	value, err := rdbc.Get(key).Result()
 	if err == redis.Nil {
-		_, err := rdbc.Set(key, url, 0).Result()
+		LogInform("Значение по ключу не найдено" + key)
+		value, err = rdbc.Set(key, url, 0).Result()
 		if err != nil {
-
+			LogError(err, "Ошибка при записи ключа "+key+" редис")
+			ReturnCode500(w)
+			return
 		}
 		LogInform("Значение по ключу " + key + " Сохранено")
 		//log.Println("Значение по ключу "+key+" Сохранено", err)
-		fmt.Fprintln(w, "http://o.cmrka.df/"+key)
+		fmt.Fprintln(w, "http://o.XXXX.df/"+key)
 	} else {
-		LogError(err, "НЕ возможно записать ключ "+key+" ошибка Значение "+value+"Существет")
-		//ErrorLogger.Println("НЕ возможно записать ключ " + key + " ошибка Значение " + value + "Существет")
+		LogError(err, "НЕ возможно записать ключ "+key+" ошибка Значение "+value+" Существет")
 		ReturnCode500(w)
 		return
 	}
