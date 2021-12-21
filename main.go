@@ -14,6 +14,20 @@ import (
 	"time"
 )
 
+var (
+	ErrorLogger *log.Logger
+	InfoLogger  *log.Logger
+)
+
+func init() {
+	logfile, err := os.OpenFile("nweLog.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	InfoLogger = log.New(logfile, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger = log.New(logfile, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
+
 // Функция подключения к БД REDIS
 func RedisConnect() *redis.Client {
 	rdbc := redis.NewClient(&redis.Options{
@@ -24,10 +38,9 @@ func RedisConnect() *redis.Client {
 	})
 	check := CheckRedisConnect(rdbc)
 	if check != true {
-		LogError(nil, "Функция RedisConnect Не удалось подключиться к REDIS ")
-
+		ErrorLogger.Println("Функция RedisConnect Не удалось подключиться к REDIS ", check)
 	} else {
-		LogInform("Функция RedisConnect Соединение с REDIS установлено ")
+		InfoLogger.Println("Функция RedisConnect Соединение с REDIS установлено ", check)
 	}
 	return rdbc
 }
@@ -36,35 +49,12 @@ func RedisConnect() *redis.Client {
 func CheckRedisConnect(rdbc *redis.Client) bool {
 	pong, err := rdbc.Ping().Result()
 	if err != nil {
-		LogError(err, "Функция CheckRedisConnect не удалось подключиться к REDIS ")
+		ErrorLogger.Println("Функция CheckRedisConnect не удалось подключиться к REDIS ", err)
 		return false
 	} else {
-		LogInform("Функция CheckRedisConnect соединение с REDIS установлено " + pong)
+		InfoLogger.Println("Функция CheckRedisConnect соединение с REDIS установлено " + pong)
 		return true
 	}
-}
-
-//Функция обработки логов ошибок
-func LogError(err error, msg string) {
-	logFile, err1 := os.OpenFile("work.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err1 != nil {
-		log.Panicf("Не возможно создать или открыть лог ошибок", err)
-	}
-	//InfoLogger = log.New(logFile, "INFO", log.Ldate|log.Lmicroseconds|log.Lshortfile)
-	ErrorLog := log.New(logFile, "ERROR - ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
-	ErrorLog.Println(err, msg)
-	log.SetOutput(logFile)
-}
-
-//Функция LogInform
-func LogInform(msg string) {
-	logFile, err1 := os.OpenFile("work.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err1 != nil {
-		log.Panicf("Не возможно создать или открыть лог ошибок", err1)
-	}
-	ErrorLog := log.New(logFile, "INFO - ", log.Ldate|log.Lmicroseconds|log.Lshortfile)
-	ErrorLog.Println(msg)
-	log.SetOutput(logFile)
 }
 
 // Функция Генерации Ключей для связки ключ:значние
@@ -73,17 +63,17 @@ func GenerateHash() (error, string) {
 	hd.MinLength = 0
 	hash, err := hashids.NewWithData(hd)
 	if err != nil {
-		LogError(err, "Функция GenerateHash не возможно создать New new HashID ")
+		ErrorLogger.Println("Функция GenerateHash не возможно создать New new HashID ", err)
+		//LogError(err, "Функция GenerateHash не возможно создать New new HashID ")
 		return err, ""
 	}
 	timeNow := time.Now()
-	//fmt.Println(timeNow.Nanosecond())
 	key, err := hash.Encode([]int{int(timeNow.Nanosecond())})
 	if err != nil {
-		LogError(err, "Функция GenerateHash не возможно Encode hashes ")
+		ErrorLogger.Println("Функция GenerateHash не возможно Encode hashes ", err)
 		return err, ""
 	} else {
-		LogInform("Ключ " + key + "Сгенерирован фунуцией GenerateHash")
+		InfoLogger.Println("Ключ " + key + "Сгенерирован фунуцией GenerateHash")
 		return nil, key
 	}
 }
@@ -93,17 +83,15 @@ func GenerateKey(rdbc *redis.Client) (error, string) {
 	if err != nil {
 		return err, ""
 	}
-	LogInform("Ключ сгенерирован " + key)
+	InfoLogger.Println("Ключ сгенерирован ", key)
 	value, err := rdbc.Get(key).Result()
 	if err == redis.Nil {
-		LogInform("Функция GenerateKey Значение по ключу " + key + " не найдено")
-		//log.Println("Функция GenerateKey Значение по ключу "+key+" не найдено", err)
+		InfoLogger.Println("Функция GenerateKey Значение по ключу "+key+" не найдено ", err)
 	} else {
-		LogError(err, "Функция GenerateKey Ключ "+key+" со значением "+value+" существует")
+		ErrorLogger.Println("Функция GenerateKey Ключ "+key+" со значением "+value+" существует ", err)
 		_, key = GenerateKey(rdbc)
 	}
 	return nil, key
-
 }
 
 // Функция Редирект с короткой ссылки на обычную
@@ -112,8 +100,7 @@ func Redirect(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	key := params["key"]
 	url, err := rdbc.Get(key).Result()
 	if err != nil {
-		LogError(err, "Функция Redirect НЕ утдалось перенаправить по ключу "+key)
-		//ErrorLogger.Println("Функция Redirect НЕ утдалось перенаправить по ключу "+key+" Ошибка", err)
+		ErrorLogger.Println("Функция Redirect НЕ утдалось перенаправить по ключу "+key+"ошибка ", err)
 		ReturnCode404(w)
 		return
 	} else {
@@ -125,8 +112,7 @@ func Redirect(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	check := CheckRedisConnect(rdbc)
 	if check != true {
-
-		LogError(nil, "Функция Create,Redis не доступен")
+		ErrorLogger.Println("Функция Create,Redis не доступен ", check)
 		ReturnCode500(w)
 		return
 	}
@@ -139,18 +125,17 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 	}
 	value, err := rdbc.Get(key).Result()
 	if err == redis.Nil {
-		LogInform("Значение по ключу не найдено" + key)
+		InfoLogger.Println("Значение по ключу " + key + " не найдено ")
 		value, err = rdbc.Set(key, url, 0).Result()
 		if err != nil {
-			LogError(err, "Ошибка при записи ключа "+key+" редис")
+			ErrorLogger.Println("При записи ключа "+key+" редис возникла ошибка ", err)
 			ReturnCode500(w)
 			return
 		}
-		LogInform("Значение по ключу " + key + " Сохранено")
-		//log.Println("Значение по ключу "+key+" Сохранено", err)
+		InfoLogger.Println("Значение по ключу " + key + " Сохранено")
 		fmt.Fprintln(w, "http://o.XXXX.df/"+key)
 	} else {
-		LogError(err, "НЕ возможно записать ключ "+key+" ошибка Значение "+value+" Существет")
+		ErrorLogger.Println("НЕ возможно записать ключ "+key+" ошибка Значение "+value+" Существет ", err)
 		ReturnCode500(w)
 		return
 	}
@@ -174,7 +159,7 @@ func main() {
 	signal.Notify(signalChanel, syscall.SIGQUIT)
 	go func() {
 		s := <-signalChanel
-		log.Printf("рограмма завершена по сигналу %s", s)
+		InfoLogger.Printf("рограмма завершена по сигналу %s", s)
 		os.Exit(1)
 	}()
 	router := mux.NewRouter()
