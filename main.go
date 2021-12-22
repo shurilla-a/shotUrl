@@ -5,6 +5,8 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"github.com/speps/go-hashids"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -28,11 +30,35 @@ func init() {
 	ErrorLogger = log.New(logfile, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
+//структура конфига
+type ConfigYmal struct {
+	Host        string        `yaml:"Host"`
+	Port        string        `yaml:"Port"`
+	DB          int           `yaml:"DB"`
+	RedisTTL    time.Duration `yaml:"RedisTTL"`
+	ShotUrlHost string        `yaml:"ShotUrlHost"`
+	HttpPort    string        `yaml:"HttpPort"`
+}
+
+// функция парсинга Ymal конфига
+func ConfigParsing(ConfigFile string) (*ConfigYmal, error) {
+	OpenConfigFile, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		log.Panicf("Все умерло ", err)
+	}
+	c := &ConfigYmal{}
+	err = yaml.Unmarshal(OpenConfigFile, c)
+	if err != nil {
+		log.Panicf("Все умерло2 ", err)
+	}
+	return c, nil
+}
+
 // Функция подключения к БД REDIS
-func RedisConnect() *redis.Client {
+func RedisConnect(config *ConfigYmal) *redis.Client {
 	rdbc := redis.NewClient(&redis.Options{
-		DB:         0,
-		Addr:       "127.0.0.1:6379",
+		DB:         config.DB,
+		Addr:       config.Host + ":" + config.Port,
 		Password:   "",
 		MaxRetries: 5,
 	})
@@ -109,7 +135,7 @@ func Redirect(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 }
 
 //Функция создания короткой ссылки
-func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
+func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client, config *ConfigYmal) {
 	check := CheckRedisConnect(rdbc)
 	if check != true {
 		ErrorLogger.Println("Функция Create,Redis не доступен ", check)
@@ -133,7 +159,7 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client) {
 			return
 		}
 		InfoLogger.Println("Значение по ключу " + key + " Сохранено")
-		fmt.Fprintln(w, "http://o.XXXX.df/"+key)
+		fmt.Fprintln(w, config.ShotUrlHost+key)
 	} else {
 		ErrorLogger.Println("НЕ возможно записать ключ "+key+" ошибка Значение "+value+" Существет ", err)
 		ReturnCode500(w)
@@ -154,7 +180,11 @@ func ReturnCode404(w http.ResponseWriter) {
 
 func main() {
 	runtime.GOMAXPROCS(2)
-	rdbc := RedisConnect()
+	config, err := ConfigParsing("config.yml")
+	if err != nil {
+		log.Panicf("Все умерло3 ", err)
+	}
+	rdbc := RedisConnect(config)
 	signalChanel := make(chan os.Signal, 1)
 	signal.Notify(signalChanel, syscall.SIGQUIT)
 	go func() {
@@ -167,7 +197,7 @@ func main() {
 		Redirect(w, req, rdbc)
 	}).Methods("GET")
 	router.HandleFunc("/create", func(w http.ResponseWriter, req *http.Request) {
-		Create(w, req, rdbc)
+		Create(w, req, rdbc, config)
 	}).Methods("POST")
-	http.ListenAndServe(":8080", router)
+	http.ListenAndServe(":"+config.HttpPort, router)
 }
