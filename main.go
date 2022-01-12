@@ -21,6 +21,7 @@ var (
 	ErrorLogger    *log.Logger
 	InfoLogger     *log.Logger
 	HttpErrorLoger *log.Logger
+	JsonError      *log.Logger
 )
 
 func init() {
@@ -31,6 +32,7 @@ func init() {
 	InfoLogger = log.New(logfile, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	ErrorLogger = log.New(logfile, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 	HttpErrorLoger = log.New(logfile, "HTTP: ", log.Ldate|log.Ltime|log.Lshortfile)
+	JsonError = log.New(logfile, "JSON: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 //структура конфига
@@ -174,46 +176,57 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client, config
 // функция обработки json
 func JsonPars(w http.ResponseWriter, req *http.Request, rdbc *redis.Client, config *ConfigYmal) {
 	type jsonStruct struct {
-		Id  string `json:"Id"`
+		Id  uint64 `json:"id"`
 		Url string `json:"url"`
 	}
 	type ArrayJsonStruct []jsonStruct
 	readBody, err := ioutil.ReadAll(req.Body)
 	if err != nil {
+		JsonError.Println("НЕ удалось прочитать Body")
 		ReturnCode500(w)
 		return
 	}
 	var arrayjsonstruct ArrayJsonStruct
 	err = json.Unmarshal(readBody, &arrayjsonstruct)
 	if err != nil {
+		JsonError.Println("НЕ удалось распарсить json")
 		ReturnCode500(w)
 		return
 	}
 	for i := 0; i < len(arrayjsonstruct); i++ {
 		err, key := GenerateKey(rdbc)
 		if err != nil {
-			ErrorLogger.Println("Функция JsonPars - ошибка генерации ключа")
+			JsonError.Println("Функция JsonPars - ошибка генерации ключа")
 			ReturnCode500(w)
 			return
 		}
 		value, err := rdbc.Get(key).Result()
 		if err == redis.Nil {
-			InfoLogger.Println("Значение по ключу " + key + " не найдено ")
+			JsonError.Println("Значение по ключу " + key + " не найдено ")
 			value, err = rdbc.Set(key, arrayjsonstruct[i].Url, 0).Result()
 			if err != nil {
-				ErrorLogger.Println("При записи ключа "+key+" редис возникла ошибка ", err)
+				JsonError.Println("При записи ключа "+key+" редис возникла ошибка ", err)
 				ReturnCode500(w)
 				return
 			}
 			InfoLogger.Println("Значение по ключу " + key + " Сохранено")
-			fmt.Fprintln(w, arrayjsonstruct[i].Url+key)
+			arrayjsonstruct[i].Url = config.ShotUrlHost + key
+			//fmt.Fprintln(w, config.ShotUrlHost+arrayjsonstruct[i].Url)
+
 		} else {
-			ErrorLogger.Println("НЕ возможно записать ключ "+key+" ошибка Значение "+value+" Существет ", err)
+			JsonError.Println("НЕ возможно записать ключ "+key+" ошибка Значение "+value+" Существет ", err)
 			ReturnCode500(w)
 			return
 		}
 	}
-
+	outJson, err := json.Marshal(arrayjsonstruct)
+	if err != nil {
+		JsonError.Println("ри кодировании Json произошла ошибка", err)
+		ReturnCode500(w)
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write(outJson)
 }
 
 //Функция Error 500
@@ -253,11 +266,11 @@ func main() {
 	router.HandleFunc("/json", func(w http.ResponseWriter, req *http.Request) {
 		JsonPars(w, req, rdbc, config)
 	}).Methods("POST")
-	srv := &http.Server{
-		Addr:     ":" + config.HttpPort,
-		ErrorLog: HttpErrorLoger,
-		Handler:  router,
-	}
-	//http.ListenAndServe(":"+config.HttpPort, router)
-	srv.ListenAndServe()
+	//srv := &http.Server{
+	//	Addr:     ":" + config.HttpPort,
+	//	ErrorLog: HttpErrorLoger,
+	//	Handler:  router,
+	//}
+	http.ListenAndServe(":"+config.HttpPort, router)
+	//srv.ListenAndServe()
 }
