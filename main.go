@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
@@ -17,8 +18,9 @@ import (
 )
 
 var (
-	ErrorLogger *log.Logger
-	InfoLogger  *log.Logger
+	ErrorLogger    *log.Logger
+	InfoLogger     *log.Logger
+	HttpErrorLoger *log.Logger
 )
 
 func init() {
@@ -28,6 +30,7 @@ func init() {
 	}
 	InfoLogger = log.New(logfile, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	ErrorLogger = log.New(logfile, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	HttpErrorLoger = log.New(logfile, "HTTP: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 //структура конфига
@@ -38,6 +41,7 @@ type ConfigYmal struct {
 	RedisTTL    time.Duration `yaml:"RedisTTL"`
 	ShotUrlHost string        `yaml:"ShotUrlHost"`
 	HttpPort    string        `yaml:"HttpPort"`
+	CoreCpu     int           `yaml:"CoreCpu"`
 }
 
 // функция парсинга Ymal конфига
@@ -167,6 +171,51 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client, config
 	}
 }
 
+// функция обработки json
+func JsonPars(w http.ResponseWriter, req *http.Request, rdbc *redis.Client, config *ConfigYmal) {
+	type jsonStruct struct {
+		Id  string `json:"Id"`
+		Url string `json:"url"`
+	}
+	type ArrayJsonStruct []jsonStruct
+	readBody, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		ReturnCode500(w)
+		return
+	}
+	var arrayjsonstruct ArrayJsonStruct
+	err = json.Unmarshal(readBody, &arrayjsonstruct)
+	if err != nil {
+		ReturnCode500(w)
+		return
+	}
+	for i := 0; i < len(arrayjsonstruct); i++ {
+		err, key := GenerateKey(rdbc)
+		if err != nil {
+			ErrorLogger.Println("Функция JsonPars - ошибка генерации ключа")
+			ReturnCode500(w)
+			return
+		}
+		value, err := rdbc.Get(key).Result()
+		if err == redis.Nil {
+			InfoLogger.Println("Значение по ключу " + key + " не найдено ")
+			value, err = rdbc.Set(key, arrayjsonstruct[i].Url, 0).Result()
+			if err != nil {
+				ErrorLogger.Println("При записи ключа "+key+" редис возникла ошибка ", err)
+				ReturnCode500(w)
+				return
+			}
+			InfoLogger.Println("Значение по ключу " + key + " Сохранено")
+			fmt.Fprintln(w, arrayjsonstruct[i].Url+key)
+		} else {
+			ErrorLogger.Println("НЕ возможно записать ключ "+key+" ошибка Значение "+value+" Существет ", err)
+			ReturnCode500(w)
+			return
+		}
+	}
+
+}
+
 //Функция Error 500
 func ReturnCode500(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusInternalServerError)
@@ -176,14 +225,16 @@ func ReturnCode500(w http.ResponseWriter) {
 func ReturnCode404(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte("404 - Page not found "))
+
 }
 
 func main() {
-	runtime.GOMAXPROCS(2)
+
 	config, err := ConfigParsing("config.yml")
 	if err != nil {
 		log.Panicf("Все умерло3 ", err)
 	}
+	runtime.GOMAXPROCS(config.CoreCpu)
 	rdbc := RedisConnect(config)
 	signalChanel := make(chan os.Signal, 1)
 	signal.Notify(signalChanel, syscall.SIGQUIT)
@@ -199,5 +250,14 @@ func main() {
 	router.HandleFunc("/create", func(w http.ResponseWriter, req *http.Request) {
 		Create(w, req, rdbc, config)
 	}).Methods("POST")
-	http.ListenAndServe(":"+config.HttpPort, router)
+	router.HandleFunc("/json", func(w http.ResponseWriter, req *http.Request) {
+		JsonPars(w, req, rdbc, config)
+	}).Methods("POST")
+	srv := &http.Server{
+		Addr:     ":" + config.HttpPort,
+		ErrorLog: HttpErrorLoger,
+		Handler:  router,
+	}
+	//http.ListenAndServe(":"+config.HttpPort, router)
+	srv.ListenAndServe()
 }
