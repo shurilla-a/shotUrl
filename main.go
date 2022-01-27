@@ -91,6 +91,8 @@ func CheckRedisConnect(rdbc *redis.Client) bool {
 
 // Функция Генерации Ключей для связки ключ:значние
 func GenerateHash() (error, string) {
+
+	const Allkey = 491796152
 	hd := hashids.NewData()
 	hd.MinLength = 0
 	hash, err := hashids.NewWithData(hd)
@@ -166,6 +168,12 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client, config
 		}
 		InfoLogger.Println("Значение по ключу " + key + " Сохранено")
 		fmt.Fprintln(w, config.ShotUrlHost+key)
+		//allDbkey, err := rdbc.DBSize().Result()
+		//if err != nil {
+		//	ErrorLogger.Println("НЕ удалось Запросить статистику по количеству лючей", err)
+		//} else {
+		//	InfoLogger.Println("В REDIS сейчас ключей", allDbkey)
+		//}
 	} else {
 		ErrorLogger.Println("НЕ возможно записать ключ "+key+" ошибка Значение "+value+" Существет ", err)
 		ReturnCode500(w)
@@ -176,8 +184,8 @@ func Create(w http.ResponseWriter, req *http.Request, rdbc *redis.Client, config
 // функция обработки json
 func JsonPars(w http.ResponseWriter, req *http.Request, rdbc *redis.Client, config *ConfigYmal) {
 	type jsonStruct struct {
-		Id  uint64 `json:"id"`
-		Url string `json:"url"`
+		Id  interface{} `json:"id"`
+		Url string      `json:"url"`
 	}
 	type ArrayJsonStruct []jsonStruct
 	readBody, err := ioutil.ReadAll(req.Body)
@@ -189,7 +197,7 @@ func JsonPars(w http.ResponseWriter, req *http.Request, rdbc *redis.Client, conf
 	var arrayjsonstruct ArrayJsonStruct
 	err = json.Unmarshal(readBody, &arrayjsonstruct)
 	if err != nil {
-		JsonError.Println("НЕ удалось распарсить json")
+		JsonError.Println("НЕ удалось распарсить json", err)
 		ReturnCode500(w)
 		return
 	}
@@ -221,7 +229,7 @@ func JsonPars(w http.ResponseWriter, req *http.Request, rdbc *redis.Client, conf
 	}
 	outJson, err := json.Marshal(arrayjsonstruct)
 	if err != nil {
-		JsonError.Println("ри кодировании Json произошла ошибка", err)
+		JsonError.Println("При кодировании Json произошла ошибка", err)
 		ReturnCode500(w)
 		return
 	}
@@ -266,11 +274,11 @@ func main() {
 	router.HandleFunc("/json", func(w http.ResponseWriter, req *http.Request) {
 		JsonPars(w, req, rdbc, config)
 	}).Methods("POST")
-	//srv := &http.Server{
-	//	Addr:     ":" + config.HttpPort,
-	//	ErrorLog: HttpErrorLoger,
-	//	Handler:  router,
-	//}
-	http.ListenAndServe(":"+config.HttpPort, router)
-	//srv.ListenAndServe()
+	srv := &http.Server{
+		Addr:     ":" + config.HttpPort,
+		ErrorLog: HttpErrorLoger,
+		Handler:  router,
+	}
+	//http.ListenAndServe(":"+config.HttpPort, router)
+	srv.ListenAndServe()
 }
