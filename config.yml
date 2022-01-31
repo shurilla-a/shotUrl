@@ -1,0 +1,14 @@
+#Адрес БД Redis
+Host: 127.0.0.1
+#Порт БД Redis
+Port: 6379
+#Номер БД Redis
+DB: 0
+#Время Жизни ключей в БД Redis
+RedisTTL: 0
+# Адрес для сокращенных ссылок
+ShotUrlHost: http://vdddc.dfd.ru/
+# Порт HTTP сервера
+HttpPort: 8088
+#Количество Ядер процессора для использоания
+CoreCpu: 1

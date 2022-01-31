@@ -94,7 +94,7 @@ func GenerateHash() (error, string) {
 
 	const Allkey = 491796152
 	hd := hashids.NewData()
-	hd.MinLength = 0
+	hd.MinLength = 5
 	hash, err := hashids.NewWithData(hd)
 	if err != nil {
 		ErrorLogger.Println("Функция GenerateHash не возможно создать New new HashID ", err)
@@ -253,7 +253,7 @@ func main() {
 
 	config, err := ConfigParsing("config.yml")
 	if err != nil {
-		log.Panicf("Все умерло3 ", err)
+		log.Panicf("Конфигурационный файл не найден", err)
 	}
 	runtime.GOMAXPROCS(config.CoreCpu)
 	rdbc := RedisConnect(config)
@@ -274,11 +274,11 @@ func main() {
 	router.HandleFunc("/json", func(w http.ResponseWriter, req *http.Request) {
 		JsonPars(w, req, rdbc, config)
 	}).Methods("POST")
-	srv := &http.Server{
-		Addr:     ":" + config.HttpPort,
-		ErrorLog: HttpErrorLoger,
-		Handler:  router,
-	}
-	//http.ListenAndServe(":"+config.HttpPort, router)
-	srv.ListenAndServe()
+	//srv := &http.Server{
+	//	Addr:     ":" + config.HttpPort,
+	//	ErrorLog: HttpErrorLoger,
+	//	Handler:  router,
+	//}
+	http.ListenAndServe(":"+config.HttpPort, router)
+	//srv.ListenAndServe()
 }
